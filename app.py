@@ -1,8 +1,10 @@
 """MAin app routing for TwitOff"""
 
-from flask import Flask
+from flask import Flask, render_template
 
 def create_app():
+    """Creating and configuring an instance of the flask application"""
+
     app = Flask(__name__)
 
     
@@ -10,7 +12,7 @@ def create_app():
     # @app.route sets the base URL for our app. 
     @app.route('/')
     def root():
-        return "Hello, Twitoff!"
+        return render_template('base.html', title="home")
 
 
     return app
