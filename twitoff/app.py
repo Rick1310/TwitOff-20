@@ -1,5 +1,7 @@
 from flask import Flask, render_template
-from .models import DB, User, insert_example_users
+from .models import DB, User 
+
+
 
 
 # creates application
