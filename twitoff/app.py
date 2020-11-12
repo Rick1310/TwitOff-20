@@ -12,7 +12,7 @@ def create_app():
     app = Flask(__name__)
 
     # database and app configurations
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite3"
+    app.config["SQLALCHEMY_DATABASE_URI"] = getenv("DATABASE_URI")
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     # initilizing database
@@ -22,56 +22,47 @@ def create_app():
     @app.route('/')  # http://127.0.0.1:5000/
     def root():
         # renders base.html template and passes down title and users
-        return render_template('base.html', title="home", users=User.query.all())
+        return render_template('base.html', title="Home", users=User.query.all())
 
-        @app.route('/compare', methods=["POST"]) # http://127.0.0.1:5000/compare
-        def compare():
-            user0, user1 = sorted(
-                [requested.values['user1'], request.values['user2']])
+    @app.route('/compare', methods=["POST"])  # http://127.0.0.1:5000/compare
+    def compare():
+        user0, user1 = sorted(
+            [request.values['user1'], request.values['user2']])
 
-            if user0 == user1:
-                message = "cannot compare users to themselves!"
+        if user0 == user1:
+            message = "Cannot compare users to themselves!"
 
-            else:
-                prediction = predict_user(
-                    user0, user1, request.values['tweet_text'])
+        else:
+            prediction = predict_user(
+                user0, user1, request.values['tweet_text'])
+            message = '{} is more likely to be said by {} than {}'.format(
+                request.values["tweet_text"], user1 if prediction else user0,
+                user0 if prediction else user1
+            )
 
-                message = '{} is morelikely to have been said by {} than {}'.format(
-                    request.values["tweet_text"], user1 if prediction else user0,
-                    user0 if prediction else user1
-                )
+        return render_template('prediction.html', title="Prediction", message=message)
 
-            return render_template('prediction.html', 
-                                    title = "Prediction", 
-                                    message = message)
+    @app.route('/user', methods=["POST"])  # http://127.0.0.1:5000/user
+    # http://127.0.0.1:5000/user/<name>
+    @app.route('/user/<name>', methods=["GET"])
+    def user(name=None, message=''):
+        name = name or request.values["user_name"]
+        try:
+            if request.method == "POST":
+                add_or_update_user(name)
+                message = "User {} was successfully added!".format(name)
 
-        @app.route('/user', methods=["POST"]) # http://127.0.0.1:5000/user
-    
-    
-        @app_route('/user/<name>', methods=["GET"]) # http://127.0.0.1:5000/user/<name>
-        def user(name=None, message=''):
-            name = name or request.values["user_name"]
+            tweets = User.query.filter(User.name == name).one().tweets
 
-            try:
-                if request.method == "POST":
-                    add_or_update_user(name)
-                    message = "User {} was succesfully added!".format(name)
+        except Exception as e:
+            message = "Error adding {}: {}".format(name, e)
+            tweets = []
 
-                tweets = User.query.filter(User.name == name).one().tweets
+        return render_template("user.html", title=name, tweets=tweets, message=message)
 
-            except Execption as e:
-                message = "Error adding {}: {}".format(name, e)
-                tweets = []
-
-            return render_template("user.html", 
-                                    title=name, 
-                                    tweets=tweets, 
-                                    message = message)
-
-    
     @app.route('/update')  # http://127.0.0.1:5000/update
     def update():
-        insert_example_users()
+        update_all_users()
         return render_template('base.html', title="Home", users=User.query.all())
 
     @app.route('/reset')  # http://127.0.0.1:5000/reset
@@ -79,10 +70,6 @@ def create_app():
         # we must create the database
         DB.drop_all()
         DB.create_all()
-        return render_template('base.html', title="Home", users=User.query.all())
-
-
+        return render_template('base.html', users=User.query.all(),
+                               title='All Tweets updated!')
     return app
-
-    
-
