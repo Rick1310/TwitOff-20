@@ -6,11 +6,10 @@ import tweepy
 from.models import DB, Tweet, User
 from os import getenv
 
-# TODO Create .env file
 
-TWITTER_API_KEY = "XsDEH821yBNk1XFM2ZguIO3O0"
-TWITTER_API_SECRET = "KGSNkNHd6gnwXeO1EdKd7Of1v3rmxUVFXJgWA26w2whqiuNadL"
-TWITTER_AUTH = tweepy.OAuthHandler(TWITTER_API_KEY, TWITTER_API_SECRET)
+TWITTER_API_KEY = getenv("TWITTER_API_KEY")
+TWITTER_API_KEY_SECRET = getenv("TWITTER_API_KEY_SECRET")
+TWITTER_AUTH = tweepy.OAuthHandler(TWITTER_API_KEY, TWITTER_API_KEY_SECRET)
 TWITTER = tweepy.API(TWITTER_AUTH)
 
 # nlp model
@@ -32,8 +31,11 @@ def add_or_update_user(username):
 
         # grabs tweets from twitter_user
         tweets = twitter_user.timeline(
-            count=200, exclude_replies=True, include_rts=False,
-            tweet_mode="extended", since_id=db_user.newest_tweet_id
+            count=200, 
+            exclude_replies=True, 
+            include_rts=False,
+            tweet_mode="extended", 
+            since_id=db_user.newest_tweet_id
         )
 
         # adds newest tweet to db_user.newest_tweet_id
@@ -43,7 +45,8 @@ def add_or_update_user(username):
         for tweet in tweets:
             # stores numerical representations
             vectorized_tweet = vectorize_tweet(tweet.full_text)
-            db_tweet = Tweet(id=tweet.id, text=tweet.full_text,
+            db_tweet = Tweet(id=tweet.id, 
+                             text=tweet.full_text,
                              vect=vectorized_tweet)
             db_user.tweets.append(db_tweet)
             DB.session.add(db_tweet)

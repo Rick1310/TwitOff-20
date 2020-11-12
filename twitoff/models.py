@@ -12,6 +12,7 @@ class User(DB.Model):
     """Twitter User Table that will correspond to tweets - SQLAlchemy syntax"""
     id = DB.Column(DB.BigInteger, primary_key=True)  # id column (primary key)
     name = DB.Column(DB.String, nullable=False)  # name column
+    newest_tweet_id = DB.Column(DB.BigInteger) # Keeps track of most recent tweet.
 
     def __repr__(self):
         return "<User: {}>".format(self.name)
