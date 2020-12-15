@@ -9,7 +9,9 @@ from .twitter import add_or_update_user
 # creates application
 def create_app():
     """Creating and configuring an instance of the Flask application"""
-    app = Flask(__name__)
+    app = Flask(__name__) # __name__ is a special python variable
+
+    #TODO Research __name__
 
     # database and app configurations
     app.config["SQLALCHEMY_DATABASE_URI"] = getenv("DATABASE_URI")
@@ -19,6 +21,7 @@ def create_app():
     DB.init_app(app)
 
     # decorator listens for specific endpoint visits
+    # 
     @app.route('/')  # http://127.0.0.1:5000/
     def root():
         # renders base.html template and passes down title and users

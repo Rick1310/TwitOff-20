@@ -7,10 +7,9 @@ from.models import DB, Tweet, User
 from os import getenv
 
 
-TWITTER_API_KEY = getenv("TWITTER_API_KEY")
-TWITTER_API_KEY_SECRET = getenv("TWITTER_API_KEY_SECRET")
-TWITTER_AUTH = tweepy.OAuthHandler(TWITTER_API_KEY, TWITTER_API_KEY_SECRET)
-TWITTER = tweepy.API(TWITTER_AUTH)
+TWITTER_AUTH = tweepy.OAuthHandler(
+    getenv("TWITTER_API_KEY"), getenv("TWITTER_API_KEY_SECRET"))
+TWITTER = tweepy.API(TWITTER_AUTH)  
 
 # nlp model
 nlp = spacy.load('my_model')
@@ -22,9 +21,10 @@ def vectorize_tweet(tweet_text):
 
 def add_or_update_user(username):
     try:
-        # grabs user from twitter DB
+        # grabs user with username from twitter DB
         twitter_user = TWITTER.get_user(username)
         # adds or updates user
+        #TODO Research logical or, and, if statements.
         db_user = (User.query.get(twitter_user.id)) or User(
             id=twitter_user.id, name=username)
         DB.session.add(db_user)
