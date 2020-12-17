@@ -1,7 +1,9 @@
 from os import getenv
 from flask import Flask, render_template, request
-from .models import DB, User 
+from .models import DB, User, MIGRATE 
+from .predict import predict_user
 from .twitter import add_or_update_user
+
 
 
 
@@ -19,6 +21,7 @@ def create_app():
 
     # initilizing database
     DB.init_app(app)
+    MIGRATE.init_app(app, DB)
 
     # decorator listens for specific endpoint visits
     # 
@@ -36,10 +39,11 @@ def create_app():
             message = "Cannot compare users to themselves!"
 
         else:
-            prediction = predict_user(
-                user0, user1, request.values['tweet_text'])
-            message = '{} is more likely to be said by {} than {}'.format(
-                request.values["tweet_text"], user1 if prediction else user0,
+            hypo_tweet_text = request.values["tweet_text"]
+            # prediction return zero or one depending upon user
+            prediction = predict_user(user0, user1, hypo_tweet_text)
+            message = "'{}' is more likely to be said by {} than {}".format(
+                hypo_tweet_text, user1 if prediction else user0,
                 user0 if prediction else user1
             )
 
@@ -65,8 +69,10 @@ def create_app():
 
     @app.route('/update')  # http://127.0.0.1:5000/update
     def update():
-        update_all_users()
-        return render_template('base.html', title="Home", users=User.query.all())
+        users = User.query.all()
+        for user in users:
+            add_or_update_user(user.name)
+        return render_template("base.html", title="Database has been updated!", users=User.query.all())
 
     @app.route('/reset')  # http://127.0.0.1:5000/reset
     def reset():

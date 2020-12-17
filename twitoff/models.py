@@ -1,10 +1,14 @@
 """SQLalchemy models and utility functions for TwitOff"""
 
-
+from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
 
+
+
+
 DB = SQLAlchemy()
+MIGRATE = Migrate()
 
 # Using SQLalchemy, we can populate tables, columns, etc. 
 # As well as populating data within.
